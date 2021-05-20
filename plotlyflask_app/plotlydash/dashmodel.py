@@ -119,7 +119,7 @@ def parse_contents(contents, filename, date):
     obj_Data.df = pd.DataFrame(df)
     corr_matrix = obj_Data.df.corr()
     fig = px.imshow(corr_matrix, title= "Corelation Matrix")
-    #print(obj_Data.df.head())
+    print(obj_Data.df.head())
     return html.Div([
         html.Div([
         html.P("Select Target", className="control_label"),
@@ -282,6 +282,8 @@ def init_callbacks(dash_app):
     def disp_model_res(button_on):
         print('inside button')
         print(f'You have selected target = {obj_Data.features}, features = {obj_Data.target}, split = {obj_Data.train_test_split} and models = {obj_Data.models}')
+        print(obj_Data.df)
+        print(obj_Data.features)
         X = obj_Data.df[obj_Data.features]
         y = obj_Data.df[obj_Data.target]
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=float(obj_Data.train_test_split), random_state=42)
