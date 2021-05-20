@@ -71,7 +71,7 @@ def init_dashlive(server):
     ],style={'width': '100%', 'display': 'inline-block', 'padding': '0 20'}),
     html.Div([
     dcc.Graph(id='sensor_pred', animate=True),
-    dcc.Interval(id='graph-update_pred', interval=1000, n_intervals=0)
+    dcc.Interval(id='graph-update_pred', interval=10000, n_intervals=0)
     ], style={'width': '100%', 'display': 'inline-block', 'padding': '0 20'}),
 
     ])

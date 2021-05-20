@@ -315,13 +315,16 @@ def init_callbacks(dash_app):
                 fig = svg_to_fig(svg_bytes, title="Decision Tree Explanation")
                 dash_table_st = conf_table(cr)
 
-                res.append(html.Div([html.H3("Decision Tree Classifier", className="control_label"),
-                html.Div(dash_table_st),
+                res.append(
+                html.Div([html.H3("Decision Tree Classifier", className="control_label"),
+                dash_table_st,
                 html.Div(
                         dcc.Graph(id="aggregate_graph3", figure = fig),
                                     className="pretty_container six columns",
                                 )
-                ]))
+                ]),
+
+                )
 
             elif(m == 'Random Forest'):
                 clf_rf = RandomForestClassifier()
@@ -341,7 +344,7 @@ def init_callbacks(dash_app):
 
                 dash_table_st = conf_table(cr)
                 res.append(html.Div([html.H3("Random Forest Classifier", className="control_label"),
-                html.Div(dash_table_st),
+                dash_table_st,
                 html.Div(
                         dcc.Graph(id="aggregate_graph1", figure = fig_featureImp),
                                     className="pretty_container six columns",
@@ -365,7 +368,7 @@ def init_callbacks(dash_app):
                             title= 'AdaBoost- Variable Importance')
                 dash_table_st = conf_table(cr)
                 res.append(html.Div([html.H3("AdaBoost Classifier", className="control_label"),
-                html.Div(dash_table_st),
+                dash_table_st,
                 html.Div(
                         dcc.Graph(id="aggregate_graph2", figure = fig_featureImp),
                                     className="pretty_container six columns",
