@@ -65,7 +65,7 @@ def init_dashlive(server):
         dcc.Graph(id = 'live-update-graph'),
         dcc.Interval(
             id='interval-component',
-            interval = 1*10000, #millisec
+            interval = 1*1000, #millisec
             n_intervals=0
         )
     ],style={'width': '100%', 'display': 'inline-block', 'padding': '0 20'}),
