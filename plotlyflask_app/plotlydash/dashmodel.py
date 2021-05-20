@@ -278,7 +278,7 @@ def init_callbacks(dash_app):
         return f'You have selected target = {target}, features = {independent}, split = {slider} and models = {selected_models}'
 
     @dash_app.callback(Output('power-button-output', 'children'),
-    [Input('my-power-button', 'on'),])
+    [Input('my-power-button', 'on'),prevent_initial_call=True])
     def disp_model_res(button_on):
         print('inside button')
         print(f'You have selected target = {obj_Data.features}, features = {obj_Data.target}, split = {obj_Data.train_test_split} and models = {obj_Data.models}')
