@@ -14,12 +14,27 @@ import base64
 import datetime as dt
 import io
 import math
+import numpy as np
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 sample_rate_chest = [1,4,700]
 sample_rate_wrist = [1,4]
 
 obj_Data = Data()
+
+def downsample_values(sensor_data,original_sr,stype='avg',target_sr=1):
+    under_sampled = []
+    step_size = int(original_sr/target_sr)
+    for i in range(0,len(sensor_data),step_size):
+        sample = sensor_data[i:i+step_size]
+        if(stype=='freq'):
+            sample = Counter(sample)
+            under_sampled.append(sample.most_common(1)[0][0])
+        elif(stype=='avg'):
+            under_sampled.append(np.mean(sample))
+    return under_sampled
+
+
 
 def init_dashprocess(server):
     dash_app = dash.Dash(
@@ -64,7 +79,7 @@ def init_dashprocess(server):
     init_callbacks(dash_app)
     return dash_app.server
 
-def parse_contents(contents, filename, date):
+def parse_contents(samp_rate, contents, filename, date):
     vcc=3
     chan_bit=2**16
 
@@ -98,11 +113,15 @@ def parse_contents(contents, filename, date):
             raw_resp = pd.DataFrame(resp_list)
 
             raw_resp.columns = ["cECG", "cEDA", "cEMG", "cTemp", "cACCx", "cACCy", "cACCz", "cResp"]
+            for col in raw_resp.columns:
+                print(col, raw_resp[raw_resp[col].isnull()])
+            print(raw_resp.isna().sum())
             #print(raw_resp.to_dict('records'))
+            print(raw_resp.head())
 
 
             raw_resp['cECG'] = [((float(signal)/chan_bit-0.5)*vcc) for signal in raw_resp['cECG']]
-            raw_resp['cEDA'] = [(((float(signal)/chan_bit)*vcc)/0.12) for signal in     raw_resp['cEDA']]
+            raw_resp['cEDA'] = [(((float(signal)/chan_bit)*vcc)/0.12) for signal in raw_resp['cEDA']]
             raw_resp['cEMG'] = [((float(signal)/chan_bit-0.5)*vcc) for signal in raw_resp['cEMG']]
             si_temp = []
             for signal in list(raw_resp['cTemp']):
@@ -116,7 +135,17 @@ def parse_contents(contents, filename, date):
             raw_resp['cACCz'] = [(float(signal)-Cmin)/(Cmax-Cmin)*2-1 for signal in raw_resp['cACCz']]
             raw_resp['cResp'] = [(float(signal) / chan_bit - 0.5) * 100 for signal in raw_resp['cResp']]
 
-        obj_Data.df = pd.DataFrame(raw_resp)
+            #def get_chest_df(df_s7):
+            df7_chest = pd.DataFrame()
+            for col in raw_resp.columns:
+                    #if(key == 'ACC'):
+                    #    for i,axis in enumerate(['x','y','z']):
+                    #        df7_chest['c'+key+axis] = downsample_values(df_s7['signal']['chest'][key][:,i],700,stype='avg',target_sr=4)
+                    #else:
+                df7_chest[col]=downsample_values(raw_resp[col],700,stype='avg',target_sr=int(samp_rate))
+
+
+        obj_Data.df = pd.DataFrame(df7_chest)
 
 
     except Exception as e:
@@ -132,7 +161,7 @@ def parse_contents(contents, filename, date):
 
 
         dash_table.DataTable(
-            data=raw_resp.to_dict('records'),
+            data=raw_resp.head().to_dict('records'),
             columns=[{'name': i, 'id': i} for i in raw_resp.columns]
         ),
 
@@ -146,6 +175,7 @@ def parse_contents(contents, filename, date):
 def downsample_values(sensor_data,original_sr,stype='avg',target_sr=1):
     under_sampled = []
     step_size = int(original_sr/target_sr)
+    print("step size: ",step_size)
     for i in range(0,len(sensor_data),step_size):
         sample = sensor_data[i:i+step_size]
         if(stype=='freq'):
@@ -159,13 +189,15 @@ def downsample_values(sensor_data,original_sr,stype='avg',target_sr=1):
 def init_callbacks(dash_app):
     @dash_app.callback(
     Output('output-data-upload', 'children'),
+    Input('resp_sampling_rate', "value"),
     Input('upload-data', 'contents'),
     State('upload-data', 'filename'),
     State('upload-data', 'last_modified'))
-    def update_output(list_of_contents, list_of_names, list_of_dates):
+    def update_output(samp_rate,list_of_contents, list_of_names, list_of_dates):
+        print('sampling rate selected: ',samp_rate)
         if list_of_contents is not None:
             children = [
-            parse_contents(c,n,d) for c,n,d in zip(list_of_contents, list_of_names,list_of_dates)]
+            parse_contents(samp_rate,c,n,d) for c,n,d in zip(list_of_contents, list_of_names,list_of_dates)]
             return children
 
     @dash_app.callback(Output("download", "data"), [Input("btn", "n_clicks"),

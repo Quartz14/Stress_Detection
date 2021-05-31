@@ -7,6 +7,7 @@ import plotly
 import random
 import plotly.graph_objs as go
 import plotly.express as px
+from plotly.subplots import make_subplots
 from collections import deque
 import pandas as pd
 import pickle
@@ -19,12 +20,18 @@ colors = ['#0d0887', '#46039f', '#7201a8', '#9c179e', '#bd3786', '#d8576b', '#ed
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 df_quest = pd.read_csv('data/quest.csv')
+df_s7 = pd.read_csv('data/S7.csv')
+sensor_list = [i for i in list(df_s7.columns)[:-1]]
+label_dict = {1:'baseline', 2:'stress', 3:'amusement', 4:'meditation'}
+s7_labels = [label_dict[i] for i in df_s7['label']]
 
 score_map = {1:'Not at all', 2 : 'A little bit', 3: 'Somewhat', 4 :'Very much', 5:'Extremely'}
 
 
 available_feelings = list(df_quest.columns)[:-1]
 available_stage = list(df_quest['stage'].unique())
+
+
 
 def init_dashboard(server):
     dash_app = dash.Dash(
@@ -34,6 +41,17 @@ def init_dashboard(server):
     )
 
     dash_app.layout = html.Div([
+
+    html.Div([
+    dcc.Dropdown(
+        id='crossfilter-sensor',
+        options=[{'label':i, 'value':i} for i in sensor_list],
+        value='cECG'
+    ),
+
+    dcc.Graph(id='graph_box')
+    ], style={'width': '100%', 'display': 'inline-block', 'padding': '0 20'}),
+
     html.Div([
     dcc.Dropdown(
         id='crossfilter-feeling',
@@ -45,10 +63,10 @@ def init_dashboard(server):
         options=[{'label':i, 'value':i} for i in available_stage],
         value='TSST'
     ),
-    ]),
-    html.Div([
     dcc.Graph(id='graph_bar-feel')
     ], style={'width': '50%', 'display': 'inline-block', 'padding': '0 20'}),
+
+
     ])
     init_callbacks(dash_app)
     return dash_app.server
@@ -70,4 +88,19 @@ def init_callbacks(dash_app):
         title='Change in feelings according to stress levels',
                    xaxis_title='Score',
                    yaxis_title='Count'
+        )}
+
+    @dash_app.callback(
+    Output('graph_box','figure'),
+    [Input('crossfilter-sensor','value'),])
+    def update_graph1(sensor_name):
+        fig_box = go.Box(x=s7_labels,y=df_s7[sensor_name])
+
+        return {'data':[fig_box],
+        'layout':go.Layout(
+        #xaxis = dict(range=[min(X), max(X)]),
+        #yaxis=dict(range=[0, 5]),
+        title='Box plot of sensor values',
+                   xaxis_title='State',
+                   yaxis_title='Sensor'
         )}
