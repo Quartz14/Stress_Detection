@@ -32,7 +32,7 @@ Deployed application: https://odu-stress-app.herokuapp.com/
 * Home page, to navigate
 ![h](screenshots/homepage.JPG)
 
-* Viewing group responses to questioneers
+* Viewing group responses to questionnaires
 ![g](screenshots/g5.JPG)
 
 
