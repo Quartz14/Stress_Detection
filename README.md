@@ -1,5 +1,5 @@
 # Stress_Detection
-Deployed application: https://odu-stress-app.herokuapp.com/
+Deployed application: ~~https://odu-stress-app.herokuapp.com/~~ (Currently not deployed)
 
 * Interactive way to visualize different sensor data, categorised by the task they were performing and the individual
 * The bar charts contains the individuals response to various standard questionnaires (to establish ground truth)
